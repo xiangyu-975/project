@@ -14,6 +14,19 @@ from pymysql import DatabaseError
 from meiduo_mall.utils.response_code import RETCODE
 
 
+class MobileCountView(View):
+    """判断手机号是否重复注册"""
+
+    def get(self, request, mobile):
+        """
+        # :param request: 请求对象
+        :param mobile: 手机号
+        :return: JSON
+        """
+        count = User.objects.filter(mobile=mobile).count()
+        return http.JsonResponse({'code': RETCODE.OK, 'errmsg': 'OK', 'count': count})
+
+
 class UsernameCountView(View):
     '''判断用户名是否重复'''
 
@@ -77,12 +90,5 @@ class RegisterView(View):
         # 登录用户 实现状态保持
         login(request, user)
         # 相应结果
+        # reverse('contents:index') == '/'
         return redirect(reverse('contents:index'))
-
-
-class MobileCountView(View):
-    '''判断手机号是否重复'''
-
-    def get(self, request, mobile):
-        count = User.objects.filter(mobile=mobile).count()
-        return http.JsonResponse({'code': RETCODE.OK, 'errmsg': 'OK', 'count': count})

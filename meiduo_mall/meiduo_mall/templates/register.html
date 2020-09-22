@@ -7,13 +7,12 @@
 	<link rel="stylesheet" type="text/css" href="{{ static('css/main.css') }}">
     <script type="text/javascript" src="{{ static('js/vue-2.5.16.js') }}"></script>
     <script type="text/javascript" src="{{ static('js/axios-0.18.0.min.js') }}"></script>
-
 </head>
 <body>
     <div id="app">
 	<div class="register_con">
 		<div class="l_con fl">
-			<a href="index.html" class="reg_logo"><img src="{{ static("images/logo.png") }}"></a>
+			<a href="index.html" class="reg_logo"><img src="../static/images/logo.png"></a>
 			<div class="reg_slogan">商品美 · 种类多 · 欢迎光临</div>
 			<div class="reg_banner"></div>
 		</div>
@@ -30,7 +29,7 @@
 							<label>用户名:</label>
 							<input type="text" v-model="username" @blur="check_username" name="username" id="user_name">
 							<span class="error_tip" v-show="error_name">[[ error_name_message ]]</span>
-						</li>					
+						</li>
 						<li>
 							<label>密码:</label>
 							<input type="password" v-model="password" @blur="check_password" name="password" id="pwd">
@@ -48,9 +47,9 @@
 						</li>
 						<li>
 							<label>图形验证码:</label>
-							<input type="text" v-model="image_code" @blur="check_image_code" name="image_code" id="pic_code" class="msg_input">
-							<img :src="image_code_url" @click="generate_image_code" alt="图形验证码" class="pic_code">
-							<span class="error_tip" v-show="error_image_code">[[ error_image_code_message ]]</span>
+							<input type="text" name="image_code" id="pic_code" class="msg_input">
+							<img :src="image_code_url" alt="图形验证码" class="pic_code">
+							<span class="error_tip">请填写图形验证码</span>
 						</li>
 						<li>
 							<label>短信验证码:</label>
@@ -62,14 +61,15 @@
 							<input type="checkbox" v-model="allow" @change="check_allow" name="allow" id="allow">
 							<label>同意”美多商城用户使用协议“</label>
 							<span class="error_tip" v-show="error_allow">请勾选用户协议</span>
+
                             {% if register_errmsg %}
                                 <span class="error_tip">{{ register_errmsg }}</span>
                             {% endif %}
-						</li>
+                        </li>
 						<li class="reg_sub">
 							<input type="submit" value="注 册">
 						</li>
-					</ul>				
+					</ul>
 				</form>
 			</div>
 		</div>
@@ -82,15 +82,12 @@
 			<span>|</span>
 			<a href="#">招聘人才</a>
 			<span>|</span>
-			<a href="#">友情链接</a>		
+			<a href="#">友情链接</a>
 		</div>
 		<p>CopyRight © 2016 北京美多商业股份有限公司 All Rights Reserved</p>
 		<p>电话：010-****888    京ICP备*******8号</p>
 	</div>
-</div>
-    <script type="text/javascript" src="{{ static('js/common.js') }}"></script>
-<script type="text/javascript" src="{{ static('js/register.js') }}"></script>
-
-
+    </div>
+    <script src="{{ static('js/register.js') }}"></script>
 </body>
 </html>
