@@ -44,7 +44,7 @@ INSTALLED_APPS = [
 
     'users',  # 用户模块
     'contents',  # 广告模块
-    # 'verifications',  # 图片验证码模块
+    'verifications',  # 图片验证码模块
 
 ]
 

@@ -11,17 +11,32 @@ let vm = new Vue({
         mobile: '',
         allow: '',
         image_code_url: '',
+        uuid: '',
+        image_code: '',
+
         // v-show
         error_name: false,
         error_password: false,
         error_password2: false,
         error_mobile: false,
         error_allow: false,
+        error_image_code: false,
+
         // error_message
         error_name_message: '',
         error_mobile_message: '',
+        error_image_code_message: '',
+    },
+    mounted(){ // 页面加载完会被调用
+        // 生成图形验证码
+        this.generate_image_code();
     },
     methods: {  // 定义和实现事件方法
+        // 生成图形验证吗的方法：封装的思想，代码复用
+        generate_image_code(){
+            this.uuid = generateUUID();
+            this.image_code_url = '/image_codes/' + this.uuid + '/';
+        },
         // 校验用户名
         check_username(){
             // 用户名5——20个字符，[a-zA-Z0-9_-]
@@ -74,6 +89,15 @@ let vm = new Vue({
                 this.error_password2 = false;
             }
         },
+        // 校验图形验证码
+        check_image_code(){
+            if (this.image_code.length != 4) {
+                this.error_image_code_message = '请输入图形验证码';
+                this.error_image_code = true;
+            } else {
+                this.error_image_code = false;
+            }
+        },
         // 校验手机号
         check_mobile() {
             let re = /^1[3-9]\d{9}$/;
@@ -84,7 +108,7 @@ let vm = new Vue({
                 this.error_mobile = true;
             }
             if (this.error_mobile == false) {
-                let url = '/mobiles/'+ this.mobile + '/count/';
+                let url = '/mobiles/' + this.mobile + '/count/';
                 axios.get(url, {
                     responseType: 'json'
                 })
