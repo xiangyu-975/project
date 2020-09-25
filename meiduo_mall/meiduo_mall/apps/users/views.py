@@ -133,6 +133,8 @@ class RegisterView(View):
         except DatabaseError:
             return render(request, 'register.html', {'register_errmsg': '注册失败'})
         # 登录用户 实现状态保持
+        # TODO : redis疑问，redis2.10.6版本与低版本如4.2的kombu兼容，(celery的问题引出)与高版本不兼容（不知是不是这样）
+        # TODO :然而login()模块与redis4.3版本不兼容，会报数据类型的错误，暂时没搞明白原因，redis2.10.6却没问题
         login(request, user)
         # 相应结果
         # reverse('contents:index') == '/'
