@@ -70,6 +70,7 @@ class SMSCodeView(View):
         #                         constants.SEND_SMS_TEMPLATE_ID)
         # 使用celery发送短信验证码
         # send_sms_code(mobile,sms_code)  # 错误写法
+        print(sms_code)
         send_sms_code.delay(mobile, sms_code)  # 千万不要忘记写delay
         # 响应结果
         return http.JsonResponse({'code': RETCODE.OK, 'errmsg': '发送短信成功'})
