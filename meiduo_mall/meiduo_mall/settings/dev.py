@@ -215,3 +215,6 @@ LOGGING = {
 AUTH_USER_MODEL = 'users.User'
 # 指定自定义用户认证的后端
 AUTHENTICATION_BACKENDS = ['users.utils.UsernameMobileBackend']
+
+# 判断用户是否登陆后，指定未登录用户重定向的地址
+LOGIN_URL = '/login/'

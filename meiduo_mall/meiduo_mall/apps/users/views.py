@@ -1,10 +1,10 @@
 import re
 
 from django import http
-from django.contrib.auth import login, authenticate
+from django.contrib.auth import login, authenticate, logout
 from users.models import User
-
 from django.shortcuts import render, redirect
+from django.contrib.auth.mixins import LoginRequiredMixin
 
 # Create your views here.
 from django.urls import reverse
@@ -12,6 +12,34 @@ from django.views import View
 from pymysql import DatabaseError
 from django_redis import get_redis_connection
 from meiduo_mall.utils.response_code import RETCODE
+
+
+class UserInfoView(LoginRequiredMixin, View):
+    '''用户中心页面'''
+
+    def get(self, request):
+        # if request.user.is_authenticated():
+        #     return render(request, 'user_center_info.html')
+        # else:
+        #     return redirect(reverse('users:login'))
+        # login_url = '/login/'
+        # redirect_field_name = 'redirect_to'
+        return render(request, 'user_center_info.html')
+
+
+class LogoutView(View):
+    '''用户退出登陆'''
+
+    def get(self, request):
+        '''实现用户退出登陆的逻辑'''
+        # 清除状态保持信息
+        logout(request)
+        # 退出登陆重定向到首页
+        response = redirect(reverse('contents:index'))
+        # 删除cookies中的用户名
+        response.delete_cookie('username')
+        # 响应结果
+        return response
 
 
 class LoginView(View):
@@ -48,7 +76,18 @@ class LoginView(View):
             # 记住登陆：状态保持周期为两周
             request.session.set_expiry(None)
         # 响应结果
-        return redirect(reverse('contents:index'))
+        # 先取出next
+        next = request.GET.get('next')
+        print(next)
+        if next:
+            response = redirect(next)
+        else:
+            # 重定向到首页
+            response = redirect(reverse('contents:index'))
+        # 为了实现在首页右上角展示用户名信息，我们需要将用户名缓存到cookie中
+        response.set_cookie('username', user.username, max_age=3600 * 24 * 15)
+        # 重定向到首页
+        return response
 
 
 class MobileCountView(View):
@@ -136,6 +175,12 @@ class RegisterView(View):
         # TODO : redis疑问，redis2.10.6版本与低版本如4.2的kombu兼容，(celery的问题引出)与高版本不兼容（不知是不是这样）
         # TODO :然而login()模块与redis4.3版本不兼容，会报数据类型的错误，暂时没搞明白原因，redis2.10.6却没问题
         login(request, user)
+        # 响应结果
+        response = redirect(reverse('contents:index'))
+        # 为了实现在首页右上角展示用户名信息，我们需要将用户名缓存到cookie中
+        response.set_cookie('username', user.username, max_age=3600 * 24 * 15)
         # 相应结果
         # reverse('contents:index') == '/'
-        return redirect(reverse('contents:index'))
+        # return http.HttpResponse('注册成功，重定向到首页')
+        # return redirect('/')
+        return response
