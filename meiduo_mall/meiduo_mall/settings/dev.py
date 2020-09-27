@@ -30,7 +30,7 @@ SECRET_KEY = 'v&#31br%cujz6qxufksjo$jvss8v5960w#*$(!=yrqu-(bt&2l'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['www.meiduo.site', '127.0.0.1']
 
 # Application definition
 
@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'users',  # 用户模块
     'contents',  # 广告模块
     'verifications',  # 图片验证码模块
+    'oauth',  # 第三方登陆
 
 ]
 
@@ -218,3 +219,8 @@ AUTHENTICATION_BACKENDS = ['users.utils.UsernameMobileBackend']
 
 # 判断用户是否登陆后，指定未登录用户重定向的地址
 LOGIN_URL = '/login/'
+
+# QQ登陆的配置参数
+QQ_CLIENT_ID = '101518219'
+QQ_CLIENT_SECRET = '418d84ebdc7241efb79536886ae95224'
+QQ_REDIRECT_URI = 'http://www.meiduo.site:8000/oauth_callback'
