@@ -1,13 +1,17 @@
 import logging
 from django import http
-from django.shortcuts import render
+from django.contrib.auth import login
+from django.shortcuts import render, redirect
 from QQLoginTool.QQtool import OAuthQQ
 # Create your views here.
+from django.urls import reverse
 from django.views import View
 from django.conf import settings
 from meiduo_mall.utils.response_code import RETCODE
 
 # 创建日志输入器
+from oauth.models import OAuthQQUser
+
 logger = logging.getLogger('django')
 
 
@@ -28,10 +32,26 @@ class QQAuthUserView(View):
             access_token = oauth.get_access_token(code)
             # 使用access_token获取openid
             openid = oauth.get_open_id(access_token)
+            print(openid)
         except Exception as e:
             logger.error(e)
             return http.HttpResponseServerError('OAuth2.0认证失败')
-            # 使用openid判断该QQ用户是否绑定过美多商城的用户
+        # 使用openid判断该QQ用户是否绑定过美多商城的用户
+        try:
+            oauth_user = OAuthQQUser.objects.get(openid=openid)
+            print(oauth_user)
+        except OAuthQQUser.DoesNotExist:
+            # openid未绑定美多商城用户
+            pass
+        else:
+            # openid已绑定美多商城用户:oauth_user.user表示从QQ登陆模型类对象中找到用户模型类对象
+            login(request, oauth_user.user)
+            # 重定向到首页
+            response = redirect(reverse('contents:index'))
+            # 将用户名写入到cookies中
+            response.set_cookie('username', oauth_user.user.username, max_age=3600 * 24 * 15)
+            # 响应QQ登陆结果
+            return response
 
 
 class QQAuthURLView(View):
