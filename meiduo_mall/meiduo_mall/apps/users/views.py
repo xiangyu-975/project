@@ -24,7 +24,14 @@ class UserInfoView(LoginRequiredMixin, View):
         #     return redirect(reverse('users:login'))
         # login_url = '/login/'
         # redirect_field_name = 'redirect_to'
-        return render(request, 'user_center_info.html')
+        # 如果LoginRequiredMixin判断出用户已登陆，那么request.user就是登陆用户对象
+        context = {
+            'username': request.user.username,
+            'mobile': request.user.mobile,
+            'email': request.user.email,
+            'email_active': request.user.email_active,
+        }
+        return render(request, 'user_center_info.html', context)
 
 
 class LogoutView(View):
