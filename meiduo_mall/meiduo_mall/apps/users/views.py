@@ -1,5 +1,6 @@
-import re
+import json, re
 
+import logging
 from django import http
 from django.contrib.auth import login, authenticate, logout
 from users.models import User
@@ -12,6 +13,32 @@ from django.views import View
 from pymysql import DatabaseError
 from django_redis import get_redis_connection
 from meiduo_mall.utils.response_code import RETCODE
+from meiduo_mall.utils.views import LoginRequiredJSONMixin
+
+# 创建日志器
+logger = logging.getLogger('django')
+
+
+class EmailView(LoginRequiredJSONMixin, View):
+    '''添加邮箱'''
+
+    def put(self, request):
+        # 接收参数
+        json_str = request.body.decode()  # body 类型是bytes
+        json_dict = json.loads(json_str)
+        email = json_dict.get('email')
+        # 校验参数
+        if not re.match(r'^[a-z0-9][\w\.\-]*@[a-z0-9]+(\.[a-z]{2,5}){1,2}$', email):
+            return http.HttpResponseForbidden('参数email有误')
+        # 将用户传入的邮箱保存到用户数据库email字段中
+        try:
+            request.user.email = email
+            request.user.save()
+        except Exception as e:
+            logger.error(e)
+            return http.JsonResponse({'code': RETCODE.DBERR, 'errmsg': '添加邮箱失败'})
+        # 响应结果
+        return http.JsonResponse({'code': RETCODE.OK, 'errmsg': 'OK'})
 
 
 class UserInfoView(LoginRequiredMixin, View):
