@@ -15,16 +15,41 @@ from django_redis import get_redis_connection
 from meiduo_mall.utils.response_code import RETCODE
 from meiduo_mall.utils.views import LoginRequiredJSONMixin
 from celery_tasks.email.tasks import send_verify_email
+from .utils import generate_verify_email_url, check_verify_email_token
 
 # 创建日志器
 logger = logging.getLogger('django')
 
 
-class AddressView(LoginRequiredMixin, View):
-    '''用户收货地址'''
+# class AddressView(LoginRequiredMixin, View):
+#     '''用户收货地址'''
+#
+#     def get(self, request):
+#         return render(request, 'user_center_site.html')
+
+
+class VerifyEmailView(View):
+    '''验证邮箱'''
 
     def get(self, request):
-        return render(request, 'user_center_site.html')
+        # 接收参数
+        token = request.GET.get('token')
+        # 校验参数
+        if not token:
+            return http.HttpResponseForbidden('缺少token')
+        # 从token中提取用户的信息 user_id  ==> user
+        user = check_verify_email_token(token)
+        if not user:
+            return http.HttpResponseBadRequest('无效的token')
+        # 将用户的email_active字段设置True
+        try:
+            user.email_active = True
+            user.save()
+        except Exception as e:
+            logger.error(e)
+            return http.HttpResponseServerError('激活邮箱失败')
+        # 响应结果:重定向到拥护衷心
+        return redirect(reverse(('users:info')))
 
 
 class EmailView(LoginRequiredJSONMixin, View):
@@ -46,7 +71,7 @@ class EmailView(LoginRequiredJSONMixin, View):
             logger.error(e)
             return http.JsonResponse({'code': RETCODE.DBERR, 'errmsg': '添加邮箱失败'})
         # 发送邮箱验证邮件
-        verify_url = 'www.baidu.com'
+        verify_url = generate_verify_email_url(request.user)
         # send_verify_email(email, verify_url)  错误写法
         send_verify_email.delay(email, verify_url)
         # 响应结果

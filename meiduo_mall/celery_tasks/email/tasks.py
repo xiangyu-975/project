@@ -5,8 +5,15 @@ from celery_tasks.main import celery_app
 
 logger = logging.getLogger('django')
 
+'''
+bind:保证task对象会作为第一个参数自动传入
+name:异步名字
+retry_backoff:异常自动重试的时间间隔 第n次(retry_backoff x 2^(n-1))s
+max_retries:异常自动重试次数的上限
+'''
 
-@celery_app.task(name='send_verify_email')
+
+@celery_app.task(bind=True, name='send_verify_email')
 def send_verify_email(self, to_email, verify_url):
     '''定义发送验证邮件的任务'''
     # send_mail('标题','普通邮件正文','收件人列表','符文本邮件正文(html)')
