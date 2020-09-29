@@ -14,9 +14,17 @@ from pymysql import DatabaseError
 from django_redis import get_redis_connection
 from meiduo_mall.utils.response_code import RETCODE
 from meiduo_mall.utils.views import LoginRequiredJSONMixin
+from celery_tasks.email.tasks import send_verify_email
 
 # 创建日志器
 logger = logging.getLogger('django')
+
+
+class AddressView(LoginRequiredMixin, View):
+    '''用户收货地址'''
+
+    def get(self, request):
+        return render(request, 'user_center_site.html')
 
 
 class EmailView(LoginRequiredJSONMixin, View):
@@ -37,6 +45,10 @@ class EmailView(LoginRequiredJSONMixin, View):
         except Exception as e:
             logger.error(e)
             return http.JsonResponse({'code': RETCODE.DBERR, 'errmsg': '添加邮箱失败'})
+        # 发送邮箱验证邮件
+        verify_url = 'www.baidu.com'
+        # send_verify_email(email, verify_url)  错误写法
+        send_verify_email.delay(email, verify_url)
         # 响应结果
         return http.JsonResponse({'code': RETCODE.OK, 'errmsg': 'OK'})
 

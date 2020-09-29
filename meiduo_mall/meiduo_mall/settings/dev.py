@@ -15,10 +15,10 @@ import os, sys
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-print(BASE_DIR)
+# print(BASE_DIR)
 
 # 查看导包路径
-print(sys.path)
+# print(sys.path)
 # 追加导包路径
 sys.path.insert(0, os.path.join(BASE_DIR, 'apps'))
 # Quick-start development settings - unsuitable for production
@@ -224,3 +224,11 @@ LOGIN_URL = '/login/'
 QQ_CLIENT_ID = '101518219'
 QQ_CLIENT_SECRET = '418d84ebdc7241efb79536886ae95224'
 QQ_REDIRECT_URI = 'http://www.meiduo.site:8000/oauth_callback'
+
+# # 邮箱参数
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'  # 指定邮件后端
+EMAIL_HOST = 'smtp.yeah.net'  # 发邮件主机
+EMAIL_PORT = 25  # 发邮件端口
+EMAIL_HOST_USER = 'xiangyu_975@yeah.net'  # 授权的邮箱
+EMAIL_HOST_PASSWORD = 'RNRHZWOLZWXTUHAM'  # 邮箱授权时获得的密码，非注册登录密码
+EMAIL_FROM = '美多商城<xiangyu_975@yeah.net>'  # 发件人抬头
