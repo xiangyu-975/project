@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'contents',  # 广告模块
     'verifications',  # 图片验证码模块
     'oauth',  # 第三方登陆
+    'areas',  # 省市区三级联动
 
 ]
 
