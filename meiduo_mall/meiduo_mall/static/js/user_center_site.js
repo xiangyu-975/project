@@ -13,6 +13,7 @@ let vm = new Vue({
             mobile: '',
             tel: '',
             email: '',
+
         },
 
         provinces: [],

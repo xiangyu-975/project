@@ -70,7 +70,7 @@
                     <h3>[[ address.title ]]</h3>
                     <a href="javascript:;" class="edit_icon"></a>
                     <em v-if="address.id===default_address_id">默认地址</em>
-                    <span class="del_site">×</span>
+                    <span @click="delete_address(index)" class="del_site">×</span>
                 </div>
                 <ul class="site_list">
                     <li><span>收货人：</span><b>[[ address.receiver ]]</b></li>
@@ -81,8 +81,8 @@
                     <li><span>电子邮箱：</span><b>[[ address.email ]]</b></li>
                 </ul>
                 <div class="down_btn">
-                    <a v-if="address.id!=default_address_id">设为默认</a>
-                    <a href="javascript:;" class="edit_icon">编辑</a>
+                    <a v-if="address.id!=default_address_id" @click="set_default(index)">设为默认</a>
+                    <a @click="show_edit_site(index)" class="edit_icon">编辑</a>
                 </div>
             </div>
         </div>
