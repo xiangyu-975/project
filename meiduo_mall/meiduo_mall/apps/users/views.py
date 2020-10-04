@@ -3,7 +3,7 @@ import json, re
 import logging
 from django import http
 from django.contrib.auth import login, authenticate, logout
-from users.models import User
+from users.models import User, Address
 from django.shortcuts import render, redirect
 from django.contrib.auth.mixins import LoginRequiredMixin
 
@@ -16,16 +16,119 @@ from meiduo_mall.utils.response_code import RETCODE
 from meiduo_mall.utils.views import LoginRequiredJSONMixin
 from celery_tasks.email.tasks import send_verify_email
 from .utils import generate_verify_email_url, check_verify_email_token
+from . import constants
 
 # 创建日志器
 logger = logging.getLogger('django')
+
+
+class AddressCreateView(LoginRequiredJSONMixin, View):
+    '''新增地址'''
+
+    def post(self, request):
+        '''实现新增地址逻辑'''
+        # 判断用户地址数量是否超过上限:查询当前登陆用户的地址数量
+        # count = Address.objects.filter(user=request.user).count()
+        count = request.user.addresses.count()  # 一查多
+        if count > constants.USER_ADDRESS_COUNTS_LIMIT:
+            return http.HttpResponse({'code': RETCODE.THROTTLINGERR, 'errmsg': '超出用户地址上限'})
+
+        # 接受参数
+        json_str = request.body.decode()
+        json_dict = json.loads(json_str)
+        receiver = json_dict.get('receiver')
+        province_id = json_dict.get('province_id')
+        city_id = json_dict.get('city_id')
+        district_id = json_dict.get('district_id')
+        place = json_dict.get('place')
+        mobile = json_dict.get('mobile')
+        tel = json_dict.get('tel')
+        email = json_dict.get('email')
+        # 校验参数
+        if not all([receiver, province_id, city_id, district_id, place, mobile]):
+            return http.HttpResponseForbidden('缺少必传参数')
+        if not re.match(r'^1[3-9]\d{9}$', mobile):
+            return http.HttpResponseForbidden('参数mobile有误')
+        if tel:
+            if not re.match(r'^(0[0-9]{2,3}-)?([2-9][0-9]{6,7})+(-[0-9]{1,4})?$', tel):
+                return http.HttpResponseForbidden('参数tel有误')
+        if email:
+            if not re.match(r'^[a-z0-9][\w\.\-]*@[a-z0-9\-]+(\.[a-z]{2,5}){1,2}$', email):
+                return http.HttpResponseForbidden('参数email有误')
+        # 保存用户传入的地址信息
+        # address = Address(
+        #     title='0'
+        # )
+        # address.save()
+
+        try:
+            address = Address.objects.create(
+                user=request.user,
+                title=receiver,  # 标题默认就是收货人
+                receiver=receiver,
+                province_id=province_id,  # 外键默认都ID
+                city_id=city_id,
+                district_id=district_id,
+                place=place,
+                mobile=mobile,
+                tel=tel,
+                email=email,
+            )
+            if not request.user.default_address:
+                request.user.default_address = address
+                request.user.save()
+        except Exception as e:
+            logger.error(e)
+            return http.JsonResponse({'code': RETCODE.DBERR, 'errmsg': '新增地址失败'})
+        # 构造新增地址字典数据
+        address_dict = {
+            "id": address.id,
+            "title": address.title,
+            "receiver": address.receiver,
+            "province": address.province.name,
+            "city": address.city.name,
+            "district": address.district.name,
+            "place": address.place,
+            "mobile": address.mobile,
+            "tel": address.tel,
+            "email": address.email
+        }
+
+        # 响应新增地址结果：需要将新增的地址返回给前端渲染
+        return http.JsonResponse({'code': RETCODE.OK, 'errmsg': '新增地址成功', 'address': address_dict})
 
 
 class AddressView(LoginRequiredMixin, View):
     '''用户收货地址'''
 
     def get(self, request):
-        return render(request, 'user_center_site.html')
+        '''查询并展示用户地址信息'''
+        # 获取当前登陆用户对象
+        login_user = request.user
+        # 使用当前登陆用户和is_deleted=False作为条件查询地址数据
+        addresses = Address.objects.filter(user=login_user, is_deleted=False)
+        # 将用户地址模型列表转字典列表:因为JsonResponse和Vue.js不认识模型列表，只有django和jinja2模板引擎认识
+        address_list = []
+        for address in addresses:
+            address_dict = {
+                "id": address.id,
+                "title": address.title,
+                "receiver": address.receiver,
+                "province": address.province.name,
+                "city": address.city.name,
+                "district": address.district.name,
+                "place": address.place,
+                "mobile": address.mobile,
+                "tel": address.tel,
+                "email": address.email
+            }
+            address_list.append(address_dict)
+        # 构造上下文
+        context = {
+            'default_address_id': login_user.default_address_id,  # 默认地址
+            'addresses': address_list
+        }
+        return render(request, 'user_center_site.html', context)
 
 
 class VerifyEmailView(View):
