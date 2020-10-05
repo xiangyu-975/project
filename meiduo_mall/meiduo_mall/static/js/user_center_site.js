@@ -37,7 +37,7 @@ let vm = new Vue({
     },
     watch: {
         // 监听到省份id变化
-        'form_address.province_id': function(){
+        'form_address.province_id': function () {
             if (this.form_address.province_id) {
                 let url = '/areas/?area_id=' + this.form_address.province_id;
                 axios.get(url, {
@@ -58,9 +58,9 @@ let vm = new Vue({
             }
         },
         // 监听到城市id变化
-        'form_address.city_id': function(){
-            if (this.form_address.city_id){
-                let url = '/areas/?area_id='+ this.form_address.city_id;
+        'form_address.city_id': function () {
+            if (this.form_address.city_id) {
+                let url = '/areas/?area_id=' + this.form_address.city_id;
                 axios.get(url, {
                     responseType: 'json'
                 })
@@ -123,7 +123,7 @@ let vm = new Vue({
         // 校验手机号
         check_mobile(){
             let re = /^1[3-9]\d{9}$/;
-            if(re.test(this.form_address.mobile)) {
+            if (re.test(this.form_address.mobile)) {
                 this.error_mobile = false;
             } else {
                 this.error_mobile = true;
@@ -146,7 +146,7 @@ let vm = new Vue({
         check_email(){
             if (this.form_address.email) {
                 let re = /^[a-z0-9][\w\.\-]*@[a-z0-9\-]+(\.[a-z]{2,5}){1,2}$/;
-                if(re.test(this.form_address.email)) {
+                if (re.test(this.form_address.email)) {
                     this.error_email = false;
                 } else {
                     this.error_email = true;
@@ -184,7 +184,7 @@ let vm = new Vue({
         },
         // 新增地址
         save_address(){
-            if (this.error_receiver || this.error_place || this.error_mobile || this.error_email || !this.form_address.province_id || !this.form_address.city_id || !this.form_address.district_id ) {
+            if (this.error_receiver || this.error_place || this.error_mobile || this.error_email || !this.form_address.province_id || !this.form_address.city_id || !this.form_address.district_id) {
                 alert('信息填写有误！');
             } else {
                 // 注意：0 == '';返回true; 0 === '';返回false;
@@ -193,7 +193,7 @@ let vm = new Vue({
                     let url = '/addresses/create/';
                     axios.post(url, this.form_address, {
                         headers: {
-                            'X-CSRFToken':getCookie('csrftoken')
+                            'X-CSRFToken': getCookie('csrftoken')
                         },
                         responseType: 'json'
                     })
@@ -216,7 +216,7 @@ let vm = new Vue({
                     let url = '/addresses/' + this.addresses[this.editing_address_index].id + '/';
                     axios.put(url, this.form_address, {
                         headers: {
-                            'X-CSRFToken':getCookie('csrftoken')
+                            'X-CSRFToken': getCookie('csrftoken')
                         },
                         responseType: 'json'
                     })
@@ -241,7 +241,7 @@ let vm = new Vue({
             let url = '/addresses/' + this.addresses[index].id + '/';
             axios.delete(url, {
                 headers: {
-                    'X-CSRFToken':getCookie('csrftoken')
+                    'X-CSRFToken': getCookie('csrftoken')
                 },
                 responseType: 'json'
             })
@@ -251,7 +251,7 @@ let vm = new Vue({
                         this.addresses.splice(index, 1);
                     } else if (response.data.code == '4101') {
                         location.href = '/login/?next=/addresses/';
-                    }else {
+                    } else {
                         alert(response.data.errmsg);
                     }
                 })
@@ -264,7 +264,7 @@ let vm = new Vue({
             let url = '/addresses/' + this.addresses[index].id + '/default/';
             axios.put(url, {}, {
                 headers: {
-                    'X-CSRFToken':getCookie('csrftoken')
+                    'X-CSRFToken': getCookie('csrftoken')
                 },
                 responseType: 'json'
             })
@@ -301,7 +301,7 @@ let vm = new Vue({
                     title: this.new_title
                 }, {
                     headers: {
-                        'X-CSRFToken':getCookie('csrftoken')
+                        'X-CSRFToken': getCookie('csrftoken')
                     },
                     responseType: 'json'
                 })

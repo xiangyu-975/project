@@ -22,6 +22,65 @@ from . import constants
 logger = logging.getLogger('django')
 
 
+class ChangePasswordView(LoginRequiredMixin, View):
+    def get(self, request):
+        '''展示修改密码页面'''
+        return render(request, 'user_center_pass.html')
+
+    def post(self, request):
+        '''实现后端逻辑'''
+        # 接收参数
+        old_password = request.POST.get('old_password')
+        new_password = request.POST.get('new_password')
+        new_password2 = request.POST.get('new_password2')
+        # 校验参数
+        if not all([old_password, new_password, new_password2]):
+            return http.HttpResponseForbidden('缺少必传参数')
+        try:
+            request.user.check_password(old_password)
+        except Exception as e:
+            logger.error(e)
+            return render(request, 'user_center_pass.html', {'origin_password_errmsg': '原始密码错误'})
+        if not re.match('^[0-9a-zA-Z]{8,20}$', new_password):
+            return http.HttpResponseForbidden('密码最短8位，最长20位')
+        if new_password != new_password2:
+            return http.HttpResponseForbidden('两次输入的密码不一致')
+        # 修改密码
+        try:
+            request.user.set_password(new_password)
+            request.user.save()
+        except Exception as e:
+            logger.error(e)
+            return render(request, 'user_center_pass.html', {'change_password_errmsg': '修改密码失败'})
+        # 清理状态保持信息
+        logout(request)
+        response = redirect(reverse('users:login'))
+        response.delete_cookie('username')
+        # 返回响应,响应密码修改结果重定向到登陆页面
+        return response
+
+
+class UpdateTitleAddressView(View):
+    def put(self, request, address_id):
+        '''更新地址标题逻辑'''
+        # 接收参数： title
+        json_dict = json.loads(request.body.decode())
+        title = json_dict.get('title')
+        # 校验参数
+        if not title:
+            return http.HttpResponseForbidden('缺少标题')
+        try:
+            # 查询当前要更新标题的地址
+            address = Address.objects.get(id=address_id)
+            address.title = title
+            address.save()
+        except Exception as e:
+            logger.error(e)
+            return http.JsonResponse({'code': RETCODE.DBERR, 'errmsg': '更新标题失败'})
+        # 将新的地址标题覆盖地址标题
+        return http.JsonResponse({'code': RETCODE.OK, 'errmsg': '更新标题成功'})
+
+
 class DefaultAddressView(View):
     '''设置默认地址'''
 
