@@ -12,6 +12,7 @@ class IndexView(View):
         '''提供首页广告页面'''
         # 准备商品分类对应的字典
         categories = OrderedDict()
+        # TODO 需要中重点复习的内容
         # 查询并展示商品分类:37个一级类别
         channels = GoodsChannel.objects.order_by('group_id', 'sequence')
         # 遍历所有频道
@@ -36,6 +37,7 @@ class IndexView(View):
 
                 # 将二级类别添加到一级类别的sub_cats
                 categories[group_id]['sub_cats'].append(cat2)
+                # TODO ！！！！！！
         # 构造上下文
         context = {
             'categories': categories
