@@ -6,10 +6,11 @@ class FastDFSStorage(Storage):
     '''自定义文件的存储类'''
 
     # 文件存储类的初始化方法
-    # def __init__(self, option=None):
-    #     if not option:
-    #         option = settings.CUSTOM_STORAGE_OPTIONS
-    #     pass
+    def __init__(self, fdfs_base_url=None):
+        # if not fdfs_base_url:
+        #     self.fdfs_base_url = settings.FDFS_BASE_URL
+        # self.fdfs_base_url = fdfs_base_url
+        self.fdfs_base_url = fdfs_base_url or settings.FDFS_BASE_URL
 
     def _open(self, name, mode='rb'):
         '''打开文件时会被调用的：必须重写'''
@@ -34,4 +35,5 @@ class FastDFSStorage(Storage):
         :param name: 文件的相对路径
         :return: http://192.168.103.158:8888/group1/M00/00/00/wKhnnlxw_gmAcoWmAAEXU5wmjPs35.jpeg
         '''
-        return 'http://192.168.220.128:8888/' + name
+        # return 'http://192.168.220.128:8888/' + name
+        return self.fdfs_base_url + name
