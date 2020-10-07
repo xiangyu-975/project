@@ -3,6 +3,7 @@ from goods.models import GoodsChannelGroup, GoodsChannel, GoodsCategory
 # Create your views here.
 from django.views import View
 from collections import OrderedDict
+from contents.models import ContentCategory, Content
 
 
 class IndexView(View):
@@ -37,9 +38,18 @@ class IndexView(View):
 
                 # 将二级类别添加到一级类别的sub_cats
                 categories[group_id]['sub_cats'].append(cat2)
-                # TODO ！！！！！！
+        # TODO ！！！！！！[代码中的FastDFS启动的storage没有报错，图片也可以正常得到，但是python.manage.shell中创建client不能使用，未解决！]
+        # 查询首页广告的数据
+        # 查询所有广告的类别
+        contents = OrderedDict()
+        content_categories = ContentCategory.objects.all()
+        for content_category in content_categories:
+            contents[content_category.key] = content_category.content_set.filter(status=True).order_by(
+                'sequence')  # 查询到未下架的广告并排序
+        # 使用广告类别查询出该类别对应的所有广告内容
         # 构造上下文
         context = {
-            'categories': categories
+            'categories': categories,
+            'contents': contents
         }
         return render(request, 'index.html', context)

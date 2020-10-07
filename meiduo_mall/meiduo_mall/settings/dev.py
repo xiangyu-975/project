@@ -236,3 +236,5 @@ EMAIL_HOST_PASSWORD = 'RNRHZWOLZWXTUHAM'  # 邮箱授权时获得的密码，非
 EMAIL_FROM = '美多商城<xiangyu_975@yeah.net>'  # 发件人抬头
 # 邮箱验证链接
 EMAIL_VERIFY_URL = 'http://www.meiduo.site:8000/emails/verification/'
+# 指定自定义的Django文件存储类
+DEFAULT_FILE_STORAGE = 'meiduo_mall.utils.fastdfs.fdfs_storage.FastDFSStorage'
