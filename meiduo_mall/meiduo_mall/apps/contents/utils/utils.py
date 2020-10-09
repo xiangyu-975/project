@@ -29,7 +29,6 @@ def get_categories():
             cat2.sub_cats = []  # 给二级类别添加一个保存三级类别的列表
             for cat3 in cat2.subs.all():  # 从二级类别找三级类别
                 cat2.sub_cats.append(cat3)  # 将三级类别添加到二级类别sub_cats
-
             # 将二级类别添加到一级类别的sub_cats
             categories[group_id]['sub_cats'].append(cat2)
     return categories

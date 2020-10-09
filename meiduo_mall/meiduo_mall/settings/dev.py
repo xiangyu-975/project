@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'oauth',  # 第三方登陆
     'areas',  # 省市区三级联动
     'goods',  # 商品模块
+    'haystack',  # 全文检索
 
 ]
 
@@ -132,6 +133,13 @@ CACHES = {
             'CLIENT_CLASS': 'django_redis.client.DefaultClient',
         }
     },
+    "history": {  # 用户浏览记录
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379/3",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
+    },
 }
 SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
 SESSION_CACHE_ALIAS = 'session'
@@ -159,7 +167,9 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+# TIME_ZONE = 'UTC'  # 跟北京时间差8个小时
+
+TIME_ZONE = 'Asia/Shanghai'
 
 USE_I18N = True
 
@@ -239,5 +249,18 @@ EMAIL_VERIFY_URL = 'http://www.meiduo.site:8000/emails/verification/'
 # 指定自定义的Django文件存储类
 DEFAULT_FILE_STORAGE = 'meiduo_mall.utils.fastdfs.fdfs_storage.FastDFSStorage'
 # FastDFS相关参数
-FDFS_BASE_URL = 'http://192.168.220.128:8888/'
+FDFS_BASE_URL = 'http://192.168.73.128:8888/'
 # FDFS_BASE_URL = 'http://image.meiduo.site:8888/'
+# Haystack
+HAYSTACK_CONNECTIONS = {
+    'default': {
+        'ENGINE': 'haystack.backends.elasticsearch_backend.ElasticsearchSearchEngine',
+        'URL': 'http://192.168.73.128:9200/',  # Elasticsearch服务器ip地址，端口号固定为9200
+        'INDEX_NAME': 'meiduo_mall',  # Elasticsearch建立的索引库的名称
+    },
+}
+
+# 当添加、修改、删除数据时，自动生成索引
+HAYSTACK_SIGNAL_PROCESSOR = 'haystack.signals.RealtimeSignalProcessor'
+# haystack分页时每页对应的条数
+HAYSTACK_SEARCH_RESULTS_PER_PAGE = 5
