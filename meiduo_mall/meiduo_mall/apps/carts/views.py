@@ -14,6 +14,64 @@ from meiduo_mall.utils.response_code import RETCODE
 logger = logging.getLogger('django')
 
 
+class CartsSelectAllView(View):
+    '''全选购物车'''
+
+    def put(self, request):
+        # 接收参数
+        json_dict = json.loads(request.body.decode())
+        selected = json_dict.get('selected', True)
+        # 校验参数
+        if selected:
+            if not isinstance(selected, bool):
+                return http.HttpResponseForbidden('参数selected有误')
+
+        # 判断用户是否登录
+        user = request.user
+        if user is not None and user.is_authenticated:
+            # 用户已登录，操作redis购物车
+            redis_conn = get_redis_connection('carts')
+            pl = redis_conn.pipeline()
+            # 获取所有的记录{b'3':b'5',b'3':b'6'}
+            redis_carts = redis_conn.hgetall('carts_%s' % user.id)
+            # 获取字典中所有的key [b'3',b'5']
+            redis_sku_ids = redis_carts.keys()
+            # 判断用户是否全选
+            if selected:
+                # 全选
+                pl.sadd('selected_%s' % user.id, *redis_sku_ids)
+            else:
+                # 取消全选
+                pl.srem('selected_%s' % user.id, *redis_sku_ids)
+                pl.execute()  # 设置的时候用到就可以
+            # 响应结果
+            return http.JsonResponse({'code': RETCODE.OK, 'errmsg': 'OK'})
+        else:
+            # 用户未登录，操作cookie购物车
+            cart_str = request.COOKIES.get('carts')
+            # 构造响应数据
+            response = http.JsonResponse({'code': RETCODE.OK, 'errmsg': 'OK'})
+            if cart_str:
+                # 将cart_str转为bytes类型的字符串
+                cart_str_bytes = cart_str.encode()
+                # 将bytes类型的字符串转bytes类型的字典
+                cart_dict_bytes = base64.b64decode(cart_str_bytes)
+                # 将bytes的字典转化为真正的字典
+                cart_dict = pickle.loads(cart_dict_bytes)
+                # 遍历所有的购物车记录   (未登录核心代码)
+                for sku_id in cart_dict:
+                    cart_dict[sku_id]['selected'] = selected  # True  / False
+                # 将原始的购物车数据编码，将cart_dict转bytes
+                cart_dict_bytes = pickle.dumps(cart_dict)
+                # 将bytes字典转bytes的str
+                cart_str_bytes = base64.b64encode(cart_dict_bytes)
+                # 将bytes类型转为str
+                cookie_carts_str = cart_str_bytes.decode()
+                # 重新将购物车数据写入cookie
+                response.set_cookie('carts', cookie_carts_str)
+            return response
+
+
 class CartsView(View):
     '''购物车管理'''
 
@@ -252,4 +310,41 @@ class CartsView(View):
             response = http.JsonResponse({'code': RETCODE.OK, 'errmsg': 'OK', 'cart_sku': cart_sku})
             response.set_cookie('carts', cookie_carts_str)
             # 响应结果
+            return response
+
+    def delete(self, request):
+        '''删除购物车'''
+        # 接收和校验参数
+        json_dict = json.loads(request.body.decode())
+        sku_id = json_dict.get('sku_id')
+        # 判断用户是否登陆
+        try:
+            SKU.objects.get(id=sku_id)
+        except SKU.DoesNotExist:
+            return http.HttpResponseForbidden('商品不存在')
+        # 判断用户是否登陆
+        user = request.user
+        if user is not None and user.is_authenticated:
+            # 用户已登陆，删除redis中的购物车
+            redis_conn = get_redis_connection('carts')
+            pl = redis_conn.pipeline()
+            # 删除键，等于删除了整条记录
+            pl.hdel('carts_%s' % user.id, sku_id)
+            pl.srem('selected_%s' % user.id, sku_id)
+            pl.execute()
+            # 删除数据后,没有响应数据,直接返回状态码即可
+            return http.JsonResponse({'code': RETCODE.OK, 'errmsg': '删除购物车成功'})
+        else:
+            # 用户未登录，删除cookie中
+            cart_str = request.COOKIES.get('carts')
+            if cart_str:
+                # 将cart_str转成bytes,再将bytes转成base64的bytes,最后将bytes转字典
+                cart_dict = pickle.loads(base64.b64decode(cart_str.encode()))
+            else:
+                cart_dict = {}
+            response = http.JsonResponse({'code': RETCODE.OK, 'errmsg': 'OK'})
+            if sku_id in cart_dict:
+                del cart_dict[sku_id]  # 如果删除的key是不存在的，会抛出一个异常
+                cookie_cart_str = base64.b64encode(pickle.dumps(cart_dict)).decode()
+                response.set_cookie('carts', cookie_cart_str)
             return response

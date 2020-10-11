@@ -10,6 +10,7 @@ from django.views import View
 from django.conf import settings
 from django_redis import get_redis_connection
 
+from carts.utils import merge_carts_cookies_redis
 from meiduo_mall.utils.response_code import RETCODE
 from .utils import generate_access_token, check_access_token
 # 创建日志输入器
@@ -57,6 +58,8 @@ class QQAuthUserView(View):
             response = redirect(next)
             # 将用户名写入到cookies中
             response.set_cookie('username', oauth_user.user.username, max_age=3600 * 24 * 15)
+            # 用户登陆成功，合并cookie购物车到redis购物车
+            response = merge_carts_cookies_redis(request=request, user=oauth_user.user, response=response)
             # 响应QQ登陆结果
             return response
 
@@ -112,6 +115,8 @@ class QQAuthUserView(View):
         response = redirect(next)
         # 将用户名写入到cookies中
         response.set_cookie('username', oauth_qq_user.user.username, max_age=3600 * 24 * 15)
+        # 用户登陆成功，合并cookie购物车到redis购物车
+        response = merge_carts_cookies_redis(request=request, user=user, response=response)
         # 响应QQ登陆结果
         return response
 
