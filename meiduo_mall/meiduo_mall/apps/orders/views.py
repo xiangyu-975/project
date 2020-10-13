@@ -109,8 +109,8 @@ class OrderCommitView(LoginRequiredJSONMixin, View):
                             transaction.savepoint_rollback(save_id)
                             return http.JsonResponse({'code': RETCODE.STOCKERR, 'errmsg': '库存补足'})
 
-                        import time
-                        time.sleep(7)
+                        # import time
+                        # time.sleep(7)
                         # SKU 减库存，加销量
                         # sku.stock -= sku_count
                         # sku.sales += sku_count
