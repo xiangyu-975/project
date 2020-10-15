@@ -104,7 +104,7 @@ WSGI_APPLICATION = 'meiduo_mall.wsgi.application'
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
 
 DATABASES = {
-    'default': {
+    'default': {  # 主机写入数据
         'ENGINE': 'django.db.backends.mysql',  # 配置mysql
         'HOST': '127.0.0.1',  # ip地址
         'POST': 3306,  # 端口号
@@ -112,7 +112,7 @@ DATABASES = {
         'PASSWORD': '790618',  # 密码
         'NAME': 'meiduo_mall',  # 数据库名字
     },
-    'slave': {  # 读（从机）
+    'slave': {  # 读取数据（从机）
         'ENGINE': 'django.db.backends.mysql',
         'HOST': '192.168.73.128',
         'PORT': 8306,

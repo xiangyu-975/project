@@ -2,6 +2,7 @@ let vm = new Vue({
     el: '#app',
     delimiters: ['[[', ']]'],
     data: {
+        // host,
         username: getCookie('username'),
         f1_tab: 1, // 1F 标签页控制
         f2_tab: 1, // 2F 标签页控制
@@ -10,11 +11,12 @@ let vm = new Vue({
         // 渲染首页购物车数据
         cart_total_count: 0,
         carts: [],
+
     },
     methods: {
         // 获取简单购物车数据
         get_carts(){
-            let url = '/carts/simple/';
+            let url = this.host + '/carts/simple/';
             axios.get(url, {
                 responseType: 'json',
             })
